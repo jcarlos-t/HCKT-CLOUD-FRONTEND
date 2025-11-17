@@ -65,3 +65,49 @@ export async function listarEmpleados(payload: ListarEmpleadosRequest) {
     url: "/empleados/listar",
   });
 }
+
+export interface ModificarEmpleadoRequest {
+  empleado_id: string;
+  nombre: string;
+  tipo_area: TipoArea;
+  estado: EstadoEmpleado;
+  contacto?: EmpleadoContacto;
+}
+
+export interface ModificarEmpleadoResponse {
+  message: string;
+  empleado: Empleado;
+}
+
+/**
+ * Actualizar empleado (P.A. o Autoridad)
+ * PUT /empleados/modificar
+ */
+export async function modificarEmpleado(payload: ModificarEmpleadoRequest) {
+  const api = await Api.getInstance("usuarios");
+
+  return api.put<ModificarEmpleadoRequest, ModificarEmpleadoResponse>(payload, {
+    url: "/empleados/modificar",
+  });
+}
+
+export interface EliminarEmpleadoRequest {
+  empleado_id: string;
+}
+
+export interface EliminarEmpleadoResponse {
+  message: string;
+}
+
+/**
+ * Eliminar empleado (P.A. o Autoridad)
+ * DELETE /empleados/eliminar
+ */
+export async function eliminarEmpleado(payload: EliminarEmpleadoRequest) {
+  const api = await Api.getInstance("usuarios");
+
+  return api.delete({
+    url: "/empleados/eliminar",
+    data: payload,
+  });
+}

@@ -5,7 +5,7 @@ import type {
 	RawAxiosRequestHeaders,
 } from "axios";
 
-export type ApiType = "usuarios" | "reportes";
+export type ApiType = "usuarios" | "reportes" | "analitica";
 
 export default class Api {
 	private static _instances: Map<ApiType, Api> = new Map();
@@ -35,8 +35,12 @@ export default class Api {
 			
 			if (type === "usuarios") {
 				basePath = import.meta.env.VITE_API_USUARIOS || "";
-			} else {
+			} else if (type === "reportes") {
 				basePath = import.meta.env.VITE_API_REPORTES || "";
+			} else if (type === "analitica") {
+				basePath = import.meta.env.VITE_API_ANALITICA || "";
+			} else {
+				basePath = "";
 			}
 
 			if (!basePath) {
