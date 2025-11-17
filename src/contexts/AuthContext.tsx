@@ -20,9 +20,9 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-
   const [[isLoading, session], setSession] = useStorageState("token");
 
+  // sincronizar tokens en instancias Api existentes
   useEffect(() => {
     // Sincronizar el token en ambas instancias de API
     Promise.all([
@@ -35,6 +35,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
   }, [session]);
 
+  // limpiar sesión cuando detectamos el evento global 'session:cleared'
+  useEffect(() => {
+    const onSessionCleared = () => {
+      setSession(null);
+    };
+    window.addEventListener("session:cleared", onSessionCleared);
+    return () => window.removeEventListener("session:cleared", onSessionCleared);
+  }, [setSession]);
+
+  // (opcional) validación inicial del token y limpieza si es inválido
+  useEffect(() => {
+    if (!session) return;
+    let mounted = true;
+    (async () => {
+      try {
+        // si tienes getMyUser disponible úsalo para validar token
+        // await getMyUser();
+      } catch (error: any) {
+        const status = error?.response?.status;
+        if (mounted && (status === 401 || status === 403)) {
+          setSession(null);
+        }
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [session, setSession]);
+
   const login = async (req: LoginRequest) => {
     const { data } = await loginService(req);  
     setSession(data.token);
@@ -45,12 +74,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSession(data.token);
   };
 
-  const logout = () => setSession(null);
+  const logout = () => {
+    localStorage.removeItem("token");
+    setSession(null);
+  };
 
   return (
-    <AuthContext.Provider
-      value={{ login, register, logout, session, isLoading }}
-    >
+    <AuthContext.Provider value={{ login, register, logout, session, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

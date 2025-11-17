@@ -6,7 +6,6 @@ import WelcomePage from "../pages/WelcomePage";
 import LoginPage from "../pages/LoginPage";
 import RegisterPage from "../pages/RegisterPage";
 import DashboardPage from "../pages/DashboardPage";
-import ReportesPage from "../pages/ReportesPage";
 import CrearReportePage from "../pages/CrearReportePage";
 import App from "../App";
 
@@ -42,7 +41,6 @@ export const router = createBrowserRouter([
       {
         element: <RoleProtectedRoute allowedRoles={["estudiante"]} />,
         children: [
-          { path: "dashboard/reportes", element: <ReportesPage /> },
           { path: "dashboard/reportar", element: <CrearReportePage /> },
         ],
       },

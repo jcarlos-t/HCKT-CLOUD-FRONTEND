@@ -1,3 +1,4 @@
+// interfaces/empleados.ts
 import Api from "../api";
 
 export type TipoArea = "ti" | "mantenimiento" | "seguridad" | string;
@@ -13,28 +14,31 @@ export interface Empleado {
   nombre: string;
   tipo_area: TipoArea;
   estado: EstadoEmpleado;
-  contacto: EmpleadoContacto;
+  contacto?: EmpleadoContacto; // opcional según README
 }
 
 export interface CrearEmpleadoRequest {
   nombre: string;
   tipo_area: TipoArea;
   estado: EstadoEmpleado;
-  contacto: EmpleadoContacto;
+  contacto?: EmpleadoContacto;
 }
 
 export interface CrearEmpleadoResponse {
+  message: string;
   empleado: Empleado;
 }
 
 export interface ListarEmpleadosRequest {
   limit: number;
+  size: number;
   last_key?: string | null;
   estado?: EstadoEmpleado;
 }
 
 export interface ListarEmpleadosResponse {
-  contents: Empleado[];
+  empleados: Empleado[];
+  count: number;
   last_key?: string | null;
 }
 

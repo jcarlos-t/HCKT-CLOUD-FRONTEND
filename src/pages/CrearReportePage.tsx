@@ -1,4 +1,3 @@
-// src/pages/CrearReportePage.tsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -7,6 +6,7 @@ import {
   type TipoIncidente,
   type NivelUrgencia,
 } from "../services/incidentes/incidentes";
+import UbicacionSection from "../components/UbicacionSection";
 
 const CrearReportePage: React.FC = () => {
   const navigate = useNavigate();
@@ -48,10 +48,8 @@ const CrearReportePage: React.FC = () => {
 
     try {
       setIsSubmitting(true);
-      const response = await crearIncidente(formData);
-      navigate("/dashboard/reportes", {
-        state: { message: "Reporte creado exitosamente" },
-      });
+      await crearIncidente(formData);
+      navigate("/dashboard");
     } catch (err) {
       console.error("Error al crear incidente:", err);
       setError("No se pudo crear el reporte. Intenta nuevamente.");
@@ -66,23 +64,19 @@ const CrearReportePage: React.FC = () => {
     >
   ) => {
     const { name, value } = e.target;
-    if (name === "piso" || name === "x" || name === "y") {
-      setFormData({
-        ...formData,
-        [name === "piso" ? "piso" : "ubicacion"]:
-          name === "piso"
-            ? parseInt(value) || 1
-            : {
-                ...formData.ubicacion,
-                [name === "x" ? "x" : "y"]: parseFloat(value) || 0,
-              },
-      });
-    } else {
-      setFormData({
-        ...formData,
-        [name]: value,
-      });
+
+    if (name === "piso") {
+      setFormData((prev) => ({
+        ...prev,
+        piso: parseInt(value, 10) || 1,
+      }));
+      return;
     }
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   return (
@@ -111,7 +105,10 @@ const CrearReportePage: React.FC = () => {
 
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm border border-sky-100 p-6 md:p-8">
+        <form
+          onSubmit={handleSubmit}
+          className="bg-white rounded-xl shadow-sm border border-sky-100 p-6 md:p-8"
+        >
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
               {error}
@@ -208,73 +205,23 @@ const CrearReportePage: React.FC = () => {
               </div>
             </div>
 
-            {/* Ubicación */}
-            <div className="border-t border-slate-200 pt-6">
-              <h3 className="text-lg font-semibold text-slate-900 mb-4">
-                Ubicación
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                  <label
-                    htmlFor="piso"
-                    className="block text-sm font-medium text-slate-700 mb-2"
-                  >
-                    Piso *
-                  </label>
-                  <input
-                    type="number"
-                    id="piso"
-                    name="piso"
-                    value={formData.piso}
-                    onChange={handleChange}
-                    required
-                    min="1"
-                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition"
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="x"
-                    className="block text-sm font-medium text-slate-700 mb-2"
-                  >
-                    Coordenada X *
-                  </label>
-                  <input
-                    type="number"
-                    id="x"
-                    name="x"
-                    value={formData.ubicacion.x}
-                    onChange={handleChange}
-                    required
-                    step="0.1"
-                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition"
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="y"
-                    className="block text-sm font-medium text-slate-700 mb-2"
-                  >
-                    Coordenada Y *
-                  </label>
-                  <input
-                    type="number"
-                    id="y"
-                    name="y"
-                    value={formData.ubicacion.y}
-                    onChange={handleChange}
-                    required
-                    step="0.1"
-                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition"
-                  />
-                </div>
-              </div>
-              <p className="text-xs text-slate-500 mt-2">
-                Indica la ubicación exacta del incidente en el campus
-              </p>
-            </div>
+            {/* Ubicación con geolocalización */}
+            <UbicacionSection
+              piso={formData.piso}
+              ubicacion={formData.ubicacion}
+              onChangePiso={(piso) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  piso,
+                }))
+              }
+              onChangeUbicacion={(ubicacion) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  ubicacion,
+                }))
+              }
+            />
 
             {/* Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-slate-200">
@@ -301,4 +248,3 @@ const CrearReportePage: React.FC = () => {
 };
 
 export default CrearReportePage;
-

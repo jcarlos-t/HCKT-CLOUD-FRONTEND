@@ -74,7 +74,6 @@ const DashboardPersonal: React.FC = () => {
       });
 
       // Aquí podrías enviar los detalles a un endpoint específico si existe
-      // Por ahora, los detalles se guardan en el estado local
       console.log("Detalles de solución:", detallesCompletado);
 
       // Actualizar la lista
@@ -312,8 +311,8 @@ const DashboardPersonal: React.FC = () => {
 
                       <div className="flex flex-wrap gap-4 text-sm text-slate-500">
                         <span>
-                          📍 Piso {incidente.piso} - ({incidente.ubicacion.x},{" "}
-                          {incidente.ubicacion.y})
+                          📍 Piso {incidente.piso} - (
+                          {incidente.ubicacion.x}, {incidente.ubicacion.y})
                         </span>
                         <span>🏷️ {incidente.tipo}</span>
                         <span>⚡ {incidente.nivel_urgencia}</span>
@@ -420,4 +419,3 @@ const DashboardPersonal: React.FC = () => {
 };
 
 export default DashboardPersonal;
-

@@ -95,25 +95,37 @@ export default class Api {
 			console.groupEnd();
 
 			return response;
-		} catch (error: any) {
-			// Trazas: Log del error
-			console.group(`API Error [${config.method?.toUpperCase() || "GET"}]`);
-			console.log("URL:", path);
-			if (error.response) {
-				console.log("Status:", error.response.status, error.response.statusText);
-				console.log("Error Response Data:", error.response.data);
-				console.log("Error Response Headers:", error.response.headers);
-			} else if (error.request) {
-				console.log("Request made but no response received");
-				console.log("Request:", error.request);
-			} else {
-				console.log("Error setting up request:", error.message);
-			}
-			console.log("Full Error:", error);
-			console.groupEnd();
+} catch (error: any) {
+  // Trazas: Log del error
+  console.group(`API Error [${config.method?.toUpperCase() || "GET"}]`);
+  console.log("URL:", path);
+  if (error.response) {
+    console.log("Status:", error.response.status, error.response.statusText);
+    console.log("Error Response Data:", error.response.data);
+    console.log("Error Response Headers:", error.response.headers);
+  } else if (error.request) {
+    console.log("Request made but no response received");
+    console.log("Request:", error.request);
+  } else {
+    console.log("Error setting up request:", error.message);
+  }
+  console.log("Full Error:", error);
+  console.groupEnd();
 
-			throw error;
-		}
+  const status = error?.response?.status;
+  if (status === 401 || status === 403 || status === 404) {
+    // Notificar al AuthContext que limpie la sesión
+    window.dispatchEvent(new Event("session:cleared"));
+
+    // Opcional: forzar navegación a login si no estamos ya ahí
+    if (window.location.pathname !== "/auth/login") {
+      window.location.href = "/auth/login";
+    }
+  }
+
+  throw error;
+}
+
 	}
 
 	public get<RequestType, ResponseType>(config: AxiosRequestConfig) {

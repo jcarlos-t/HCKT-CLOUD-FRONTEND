@@ -1,9 +1,18 @@
+// services/incidentes.ts
 import Api from "../api";
 
-export type TipoIncidente = "mantenimiento" | "seguridad" | string;
-export type NivelUrgencia = "bajo" | "medio" | "alto" | string;
+export type TipoIncidente =
+  | "mantenimiento"
+  | "seguridad"
+  | "limpieza"
+  | "TI"
+  | "otro"
+  | string;
+
+export type NivelUrgencia = "bajo" | "medio" | "alto" | "critico" | string;
+
 export type EstadoIncidente =
-  | "pendiente"
+  | "reportado"
   | "en_progreso"
   | "resuelto"
   | string;
@@ -13,7 +22,9 @@ export interface Ubicacion {
   y: number;
 }
 
-export interface Evidencias {
+export interface Evidencia {
+  filename: string;
+  content_type: string;
   file_base64: string;
 }
 
@@ -26,7 +37,7 @@ export interface Incidente {
   tipo: TipoIncidente;
   nivel_urgencia: NivelUrgencia;
   estado?: EstadoIncidente;
-  usuario_correo?: string; // solo visible para autoridad/personal
+  usuario_correo?: string;
 }
 
 /**
@@ -40,11 +51,12 @@ export interface CrearIncidenteRequest {
   ubicacion: Ubicacion;
   tipo: TipoIncidente;
   nivel_urgencia: NivelUrgencia;
-  evidencias?: Evidencias;
+  evidencias?: Evidencia[]; // array según README
 }
 
 export interface CrearIncidenteResponse {
-  incidente_id: string;
+  message: string;
+  incidente: Incidente;
 }
 
 export async function crearIncidente(payload: CrearIncidenteRequest) {
@@ -58,25 +70,25 @@ export async function crearIncidente(payload: CrearIncidenteRequest) {
 /**
  * Actualizar Incidente (Estudiante)
  * PUT /incidentes/update
+ * (puedes hacer los campos opcionales si el backend soporta parches parciales)
  */
 export interface ActualizarIncidenteRequest {
   incidente_id: string;
-  titulo: string;
-  descripcion: string;
-  piso: number;
-  ubicacion: Ubicacion;
-  tipo: TipoIncidente;
-  nivel_urgencia: NivelUrgencia;
+  titulo?: string;
+  descripcion?: string;
+  piso?: number;
+  ubicacion?: Ubicacion;
+  tipo?: TipoIncidente;
+  nivel_urgencia?: NivelUrgencia;
+  evidencias?: Evidencia[];
 }
 
 export async function actualizarIncidente(payload: ActualizarIncidenteRequest) {
   const api = await Api.getInstance("reportes");
 
-  return api.put<ActualizarIncidenteRequest, { incidente: Incidente }>(
+  return api.put<ActualizarIncidenteRequest, { message: string; incidente: Incidente }>(
     payload,
-    {
-      url: "/incidentes/update",
-    },
+    { url: "/incidentes/update" },
   );
 }
 
@@ -86,7 +98,8 @@ export async function actualizarIncidente(payload: ActualizarIncidenteRequest) {
  */
 export interface ActualizarEstadoIncidenteRequest {
   incidente_id: string;
-  estado: EstadoIncidente; // ej: "en_progreso"
+  estado: EstadoIncidente;
+  comentario_resolucion?: string;
 }
 
 export async function actualizarEstadoIncidente(
@@ -96,7 +109,7 @@ export async function actualizarEstadoIncidente(
 
   return api.put<
     ActualizarEstadoIncidenteRequest,
-    { incidente: Incidente }
+    { message: string; incidente: Incidente }
   >(payload, {
     url: "/incidentes/update_estado",
   });
@@ -123,19 +136,22 @@ export async function buscarIncidente(payload: BuscarIncidenteRequest) {
 }
 
 /**
- * Listar Incidentes (Estudiante / Autoridad)
+ * Listar Incidentes
  * POST /incidentes/listar
- * body: { size, last_key? }
- * La diferencia la marca el rol del token: autoridad ve usuario_correo, estudiante no.
+ * body: { page, size, limit? }
  */
 export interface ListarIncidentesRequest {
+  page: number;
   size: number;
-  last_key?: string | null;
+  limit?: number;
 }
 
 export interface ListarIncidentesResponse {
   contents: Incidente[];
-  last_key?: string | null;
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
 }
 
 export async function listarIncidentes(payload: ListarIncidentesRequest) {

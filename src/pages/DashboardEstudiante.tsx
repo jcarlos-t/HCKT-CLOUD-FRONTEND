@@ -3,7 +3,11 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthContext } from "../contexts/AuthContext";
 import { getMyUser, type Usuario } from "../services/usuario/usuario";
-import { listarIncidentes, type Incidente } from "../services/incidentes/incidentes";
+import {
+  listarIncidentes,
+  type Incidente,
+} from "../services/incidentes/incidentes";
+import ReportesList from "../components/ReportesList";
 
 const DashboardEstudiante: React.FC = () => {
   const navigate = useNavigate();
@@ -18,8 +22,8 @@ const DashboardEstudiante: React.FC = () => {
         if (session) {
           const userResponse = await getMyUser();
           setUsuario(userResponse.data.usuario);
-          
-          // Obtener solo los incidentes del estudiante
+
+          // Obtener solo los incidentes del estudiante (según backend)
           const incidentesResponse = await listarIncidentes({ size: 50 });
           setIncidentes(incidentesResponse.data.contents);
         }
@@ -195,25 +199,23 @@ const DashboardEstudiante: React.FC = () => {
             </button>
           </div>
 
+          {/* Antes había una tarjeta que navegaba a /dashboard/reportes,
+              ahora mostramos directamente los reportes en el dashboard */}
           <div className="bg-white rounded-xl shadow-sm border border-sky-100 p-6">
-            <h3 className="text-lg font-semibold text-slate-900 mb-4">
+            <h3 className="text-lg font-semibold text-slate-900 mb-2">
               Mis Reportes
             </h3>
             <p className="text-slate-600 mb-4">
-              Visualiza y gestiona todos tus incidentes reportados.
+              Gracias por contribuir a la mejora constante de UTEC. Tus reportes recientes aparecen en la sección de abajo. Que tengas un buen día.
             </p>
-            <button
-              onClick={() => navigate("/dashboard/reportes")}
-              className="w-full bg-white text-sky-600 border border-sky-300 py-3 rounded-lg font-medium hover:bg-sky-50 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 transition"
-            >
-              Ver Mis Reportes
-            </button>
           </div>
         </div>
+
+        {/* Lista de reportes del estudiante dentro del dashboard */}
+        <ReportesList />
       </main>
     </div>
   );
 };
 
 export default DashboardEstudiante;
-
