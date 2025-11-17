@@ -8,6 +8,7 @@ import RegisterPage from "../pages/RegisterPage";
 import DashboardPage from "../pages/DashboardPage";
 import CrearReportePage from "../pages/CrearReportePage";
 import App from "../App";
+import PerfilEstudiantePage from "../pages/PerfilEstudiantePage";
 
 export const router = createBrowserRouter([
   {
@@ -42,6 +43,7 @@ export const router = createBrowserRouter([
         element: <RoleProtectedRoute allowedRoles={["estudiante"]} />,
         children: [
           { path: "dashboard/reportar", element: <CrearReportePage /> },
+          { path: "dashboard/perfil", element: <PerfilEstudiantePage /> },
         ],
       },
 
