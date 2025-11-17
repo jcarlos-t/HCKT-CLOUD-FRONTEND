@@ -37,8 +37,10 @@ const DashboardEstudiante: React.FC = () => {
     fetchData();
   }, [session]);
 
+  // Ajustado a los IncidentStatus: "reportado" | "en_progreso" | "resuelto"
   const estadisticas = {
-    pendientes: incidentes.filter((i) => i.estado === "pendiente").length,
+    // Consideramos "reportado" como equivalente a "pendiente"
+    pendientes: incidentes.filter((i) => i.estado === "reportado").length,
     enAtencion: incidentes.filter((i) => i.estado === "en_progreso").length,
     resueltos: incidentes.filter((i) => i.estado === "resuelto").length,
     total: incidentes.length,
@@ -199,14 +201,13 @@ const DashboardEstudiante: React.FC = () => {
             </button>
           </div>
 
-          {/* Antes había una tarjeta que navegaba a /dashboard/reportes,
-              ahora mostramos directamente los reportes en el dashboard */}
           <div className="bg-white rounded-xl shadow-sm border border-sky-100 p-6">
             <h3 className="text-lg font-semibold text-slate-900 mb-2">
               Mis Reportes
             </h3>
             <p className="text-slate-600 mb-4">
-              Gracias por contribuir a la mejora constante de UTEC. Tus reportes recientes aparecen en la sección de abajo. Que tengas un buen día.
+              Gracias por contribuir a la mejora constante de UTEC. Tus reportes
+              recientes aparecen en la sección de abajo. Que tengas un buen día.
             </p>
           </div>
         </div>

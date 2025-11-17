@@ -111,9 +111,6 @@ const ReportesList: React.FC = () => {
                       ID: {incidente.incidente_id}
                     </p>
                   )}
-                  <p className="text-sm text-slate-600 line-clamp-2">
-                    {incidente.descripcion ?? "Sin descripción"}
-                  </p>
                   <div className="flex flex-wrap gap-4 text-sm text-slate-500 mt-2">
                     <div className="flex items-center gap-1">
                       <span>📍</span>

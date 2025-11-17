@@ -99,6 +99,9 @@ export async function actualizarIncidente(payload: ActualizarIncidenteRequest) {
 export interface ActualizarEstadoIncidenteRequest {
   incidente_id: string;
   estado: EstadoIncidente;
+  // requerido por el backend cuando estado = "en_progreso"
+  empleado_correo?: string;
+  // opcional, pero útil cuando se marca como "resuelto"
   comentario_resolucion?: string;
 }
 

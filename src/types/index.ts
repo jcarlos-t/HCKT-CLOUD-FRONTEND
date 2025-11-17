@@ -1,42 +1,55 @@
-export type UserRole = 'estudiante' | 'personal_administrativo' | 'autoridad';
+// types/index.ts
 
+// Roles tal como los usa el backend
+export type UserRole = "estudiante" | "personal_administrativo" | "autoridad";
+
+// Mapeado a Usuario del backend
 export interface User {
-  id: string;
-  email: string;
-  name: string;
+  // opcional si algún día usas un id interno,
+  // pero el identificador real es el correo.
+  id?: string;
+  correo: string;
+  nombre: string;
   rol: UserRole;
 }
 
-export type IncidentStatus = 'pendiente' | 'en_atencion' | 'resuelto';
+// Estados alineados con EstadoIncidente del backend
+export type IncidentStatus = "reportado" | "en_progreso" | "resuelto";
 
-export type IncidentType = 
-  | 'infraestructura' 
-  | 'servicios' 
-  | 'emergencia' 
-  | 'seguridad' 
-  | 'limpieza' 
-  | 'otros';
+// Tipos alineados con TipoIncidente (puedes extender con string si quieres más)
+export type IncidentType =
+  | "mantenimiento"
+  | "seguridad"
+  | "limpieza"
+  | "TI"
+  | "otro"
+  | string;
 
-export type UrgencyLevel = 'baja' | 'media' | 'alta' | 'critica';
+// Niveles alineados con NivelUrgencia
+export type UrgencyLevel = "bajo" | "medio" | "alto" | "critico";
 
-export interface Incident {
-  id: string;
-  type: IncidentType;
-  location: string;
-  description: string;
-  urgency: UrgencyLevel;
-  status: IncidentStatus;
-  reportedBy: string;
-  reportedAt: string;
-  updatedAt: string;
-  assignedTo?: string;
-  history?: IncidentHistory[];
-}
-
+// Historial (no está en el backend tal cual, pero lo dejamos coherente en español)
 export interface IncidentHistory {
-  action: string;
-  performedBy: string;
+  accion: string;
+  realizado_por: string;
   timestamp: string;
-  notes?: string;
+  notas?: string;
 }
 
+// Incidente alineado con la interfaz Incidente usada en services/incidentes
+export interface Incident {
+  incidente_id: string;
+  titulo: string;
+  descripcion: string;
+  piso: number;
+  ubicacion: {
+    x: number;
+    y: number;
+  };
+  tipo: IncidentType;
+  nivel_urgencia: UrgencyLevel;
+  estado?: IncidentStatus;
+  usuario_correo?: string;     // quien lo reportó
+  asignado_a?: string;         // correo o id del encargado (si lo manejas)
+  historial?: IncidentHistory[];
+}
