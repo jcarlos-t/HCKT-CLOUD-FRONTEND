@@ -3,66 +3,40 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthContext } from "../contexts/AuthContext";
 import { getMyUser, type Usuario } from "../services/usuario/usuario";
-import {
-  listarIncidentes,
-  type Incidente,
-} from "../services/incidentes/incidentes";
+import IncidentesPorPisoChart from "../components/analitica/IncidentesPorPisoChart";
+import IncidentesPorTipoChart from "../components/analitica/IncidentesPorTipoChart";
+import IncidentesPorUrgenciaChart from "../components/analitica/IncidentesPorUrgenciaChart";
+import TiempoResolucionCard from "../components/analitica/TiempoResolucionCard";
+import TopUsuariosReportadores from "../components/analitica/TopUsuariosReportadores";
+import TriggerETLButton from "../components/analitica/TriggerETLButton";
+import MetricasPrincipalesCards from "../components/analitica/MetricasPrincipalesCards";
 
 const DashboardAutoridad: React.FC = () => {
   const navigate = useNavigate();
   const { logout, session } = useAuthContext();
   const [usuario, setUsuario] = useState<Usuario | null>(null);
-  const [incidentes, setIncidentes] = useState<Incidente[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const fetchData = async () => {
+    try {
+      if (session) {
+        const userResponse = await getMyUser();
+        setUsuario(userResponse.data.usuario);
+      }
+    } catch (error) {
+      console.error("Error al obtener datos:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        if (session) {
-          const userResponse = await getMyUser();
-          setUsuario(userResponse.data.usuario);
-
-          const incidentesResponse = await listarIncidentes({ size: 100 });
-          setIncidentes(incidentesResponse.data.contents);
-        }
-      } catch (error) {
-        console.error("Error al obtener datos:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchData();
   }, [session]);
 
-  // Análisis y estadísticas
-  const analitica = {
-    total: incidentes.length,
-    porEstado: {
-      pendientes: incidentes.filter((i) => i.estado === "pendiente").length,
-      enProgreso: incidentes.filter((i) => i.estado === "en_progreso").length,
-      resueltos: incidentes.filter((i) => i.estado === "resuelto").length,
-    },
-    porTipo: incidentes.reduce((acc, inc) => {
-      acc[inc.tipo] = (acc[inc.tipo] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>),
-    porUrgencia: incidentes.reduce((acc, inc) => {
-      acc[inc.nivel_urgencia] = (acc[inc.nivel_urgencia] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>),
-    porPiso: incidentes.reduce((acc, inc) => {
-      acc[inc.piso] = (acc[inc.piso] || 0) + 1;
-      return acc;
-    }, {} as Record<number, number>),
-    tasaResolucion:
-      incidentes.length > 0
-        ? (
-            (incidentes.filter((i) => i.estado === "resuelto").length /
-              incidentes.length) *
-            100
-          ).toFixed(1)
-        : "0",
+  const handleRefreshData = () => {
+    setRefreshKey((prev) => prev + 1);
   };
 
   const handleLogout = () => {
@@ -128,229 +102,42 @@ const DashboardAutoridad: React.FC = () => {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header con botón ETL */}
         <div className="bg-white rounded-2xl shadow-sm border border-sky-100 p-6 mb-8">
-          <h2 className="text-2xl font-semibold text-slate-900 mb-2">
-            Analítica de Reportes y Soluciones
-          </h2>
-          <p className="text-slate-600">
-            Análisis completo de incidentes y tendencias en el campus.
-          </p>
+          <div className="flex items-start justify-between">
+            <div>
+              <h2 className="text-2xl font-semibold text-slate-900 mb-2">
+                Analítica de Reportes y Soluciones
+              </h2>
+              <p className="text-slate-600">
+                Análisis completo de incidentes y tendencias en el campus.
+              </p>
+            </div>
+            <TriggerETLButton onSuccess={handleRefreshData} />
+          </div>
         </div>
 
         {/* Métricas Principales */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow-sm border border-sky-100 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-slate-600 mb-1">
-                  Total Incidentes
-                </p>
-                <p className="text-3xl font-bold text-slate-900">
-                  {analitica.total}
-                </p>
-              </div>
-              <div className="w-12 h-12 bg-sky-100 rounded-lg flex items-center justify-center">
-                <span className="text-2xl">📊</span>
-              </div>
-            </div>
-          </div>
+        <MetricasPrincipalesCards key={refreshKey} />
 
-          <div className="bg-white rounded-xl shadow-sm border border-sky-100 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-slate-600 mb-1">
-                  Tasa de Resolución
-                </p>
-                <p className="text-3xl font-bold text-slate-900">
-                  {analitica.tasaResolucion}%
-                </p>
-              </div>
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <span className="text-2xl">✅</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm border border-sky-100 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-slate-600 mb-1">
-                  Pendientes
-                </p>
-                <p className="text-3xl font-bold text-slate-900">
-                  {analitica.porEstado.pendientes}
-                </p>
-              </div>
-              <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                <span className="text-2xl">⏳</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm border border-sky-100 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-slate-600 mb-1">
-                  En Progreso
-                </p>
-                <p className="text-3xl font-bold text-slate-900">
-                  {analitica.porEstado.enProgreso}
-                </p>
-              </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <span className="text-2xl">🔧</span>
-              </div>
-            </div>
-          </div>
+        {/* Tiempo de Resolución */}
+        <div className="mb-8">
+          <TiempoResolucionCard key={refreshKey} />
         </div>
 
         {/* Análisis por Categorías */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {/* Por Tipo */}
-          <div className="bg-white rounded-xl shadow-sm border border-sky-100 p-6">
-            <h3 className="text-lg font-semibold text-slate-900 mb-4">
-              Incidentes por Tipo
-            </h3>
-            <div className="space-y-3">
-              {Object.entries(analitica.porTipo).map(([tipo, cantidad]) => (
-                <div key={tipo} className="flex items-center justify-between">
-                  <span className="text-slate-700 capitalize">{tipo}</span>
-                  <div className="flex items-center gap-3">
-                    <div className="w-32 bg-slate-200 rounded-full h-2">
-                      <div
-                        className="bg-sky-600 h-2 rounded-full"
-                        style={{
-                          width: `${
-                            (cantidad / analitica.total) * 100
-                          }%`,
-                        }}
-                      ></div>
-                    </div>
-                    <span className="text-sm font-semibold text-slate-900 w-8 text-right">
-                      {cantidad}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Por Urgencia */}
-          <div className="bg-white rounded-xl shadow-sm border border-sky-100 p-6">
-            <h3 className="text-lg font-semibold text-slate-900 mb-4">
-              Incidentes por Urgencia
-            </h3>
-            <div className="space-y-3">
-              {Object.entries(analitica.porUrgencia).map(
-                ([urgencia, cantidad]) => (
-                  <div
-                    key={urgencia}
-                    className="flex items-center justify-between"
-                  >
-                    <span className="text-slate-700 capitalize">{urgencia}</span>
-                    <div className="flex items-center gap-3">
-                      <div className="w-32 bg-slate-200 rounded-full h-2">
-                        <div
-                          className={`h-2 rounded-full ${
-                            urgencia === "alto"
-                              ? "bg-red-600"
-                              : urgencia === "medio"
-                              ? "bg-orange-600"
-                              : "bg-green-600"
-                          }`}
-                          style={{
-                            width: `${
-                              (cantidad / analitica.total) * 100
-                            }%`,
-                          }}
-                        ></div>
-                      </div>
-                      <span className="text-sm font-semibold text-slate-900 w-8 text-right">
-                        {cantidad}
-                      </span>
-                    </div>
-                  </div>
-                )
-              )}
-            </div>
-          </div>
+          <IncidentesPorTipoChart key={`tipo-${refreshKey}`} />
+          <IncidentesPorUrgenciaChart key={`urgencia-${refreshKey}`} />
         </div>
 
         {/* Por Piso */}
-        <div className="bg-white rounded-xl shadow-sm border border-sky-100 p-6 mb-8">
-          <h3 className="text-lg font-semibold text-slate-900 mb-4">
-            Incidentes por Piso
-          </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {Object.entries(analitica.porPiso)
-              .sort(([a], [b]) => Number(a) - Number(b))
-              .map(([piso, cantidad]) => (
-                <div
-                  key={piso}
-                  className="text-center p-4 bg-sky-50 rounded-lg"
-                >
-                  <p className="text-2xl font-bold text-sky-600">{cantidad}</p>
-                  <p className="text-sm text-slate-600">Piso {piso}</p>
-                </div>
-              ))}
-          </div>
+        <div className="mb-8">
+          <IncidentesPorPisoChart key={`piso-${refreshKey}`} />
         </div>
 
-        {/* Resumen de Estados */}
-        <div className="bg-white rounded-xl shadow-sm border border-sky-100 p-6">
-          <h3 className="text-lg font-semibold text-slate-900 mb-4">
-            Resumen de Estados
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-              <p className="text-sm text-yellow-700 mb-1">Pendientes</p>
-              <p className="text-2xl font-bold text-yellow-900">
-                {analitica.porEstado.pendientes}
-              </p>
-              <p className="text-xs text-yellow-600 mt-1">
-                {analitica.total > 0
-                  ? (
-                      (analitica.porEstado.pendientes / analitica.total) *
-                      100
-                    ).toFixed(1)
-                  : 0}
-                % del total
-              </p>
-            </div>
-
-            <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-              <p className="text-sm text-blue-700 mb-1">En Progreso</p>
-              <p className="text-2xl font-bold text-blue-900">
-                {analitica.porEstado.enProgreso}
-              </p>
-              <p className="text-xs text-blue-600 mt-1">
-                {analitica.total > 0
-                  ? (
-                      (analitica.porEstado.enProgreso / analitica.total) *
-                      100
-                    ).toFixed(1)
-                  : 0}
-                % del total
-              </p>
-            </div>
-
-            <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-              <p className="text-sm text-green-700 mb-1">Resueltos</p>
-              <p className="text-2xl font-bold text-green-900">
-                {analitica.porEstado.resueltos}
-              </p>
-              <p className="text-xs text-green-600 mt-1">
-                {analitica.total > 0
-                  ? (
-                      (analitica.porEstado.resueltos / analitica.total) *
-                      100
-                    ).toFixed(1)
-                  : 0}
-                % del total
-              </p>
-            </div>
-          </div>
-        </div>
+        {/* Top Usuarios Reportadores */}
+        <TopUsuariosReportadores key={`usuarios-${refreshKey}`} />
       </main>
     </div>
   );
