@@ -1,73 +1,171 @@
-# React + TypeScript + Vite
+# 🏫 AlertaUTEC – Sistema de Reporte y Gestión de Incidentes
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+AlertaUTEC es una aplicación web diseñada para que **estudiantes, personal administrativo y autoridades** puedan **reportar, gestionar y monitorear incidentes** dentro del campus universitario.
 
-Currently, two official plugins are available:
+El proyecto está dividido en un **frontend en React + Vite** y un **backend en AWS (API Gateway + Lambdas + DynamoDB)**.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## React Compiler
+## 🚀 Características Principales
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 👤 **Estudiantes**
 
-## Expanding the ESLint configuration
+* Registrar nuevos incidentes.
+* Ver el estado de sus reportes (Reportado → En Progreso → Resuelto).
+* Ver detalles como ubicación, piso, urgencia y tipo.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### 👨‍🔧 **Personal Administrativo**
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+* Listar todos los incidentes.
+* Cambiar estado a **en_progreso** (incluye asignación automática de empleado).
+* Completar incidentes con detalles de resolución.
+* Ver estadísticas de estados.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### 🏛️ **Autoridades**
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+* Consultar incidentes específicos.
+* Monitorear métricas del campus.
+
+---
+
+## 🧩 Tecnologías Utilizadas
+
+### **Frontend**
+
+* React + Vite + TypeScript
+* TailwindCSS
+* React Router
+* Context API (sesiones)
+* Axios para comunicación con el backend
+
+### **Backend (AWS)**
+
+* API Gateway
+* Lambda Functions (Node)
+* DynamoDB
+* Amazon S3 (evidencias)
+* AWS Cognito (autenticación JWT)
+
+---
+
+## 📦 Estructura del Proyecto (Frontend)
+
+```
+src/
+ ├─ components/       # Componentes UI reutilizables
+ ├─ pages/            # Páginas completas por rol
+ ├─ contexts/         # Contextos globales (Auth)
+ ├─ services/         # Conexión a API (incidentes, usuario)
+ ├─ types/            # Tipos globales y modelos
+ ├─ api/              # Configuración Axios + tokens
+ └─ assets/           # Imágenes, iconos, estáticos
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## 🔌 Endpoints Principales (Backend)
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### **Incidentes**
+
+| Método | Endpoint                    | Descripción                  |
+| ------ | --------------------------- | ---------------------------- |
+| POST   | `/incidentes/crear`         | Crear incidente (estudiante) |
+| PUT    | `/incidentes/update`        | Actualizar un incidente      |
+| PUT    | `/incidentes/update_estado` | Cambiar estado (personal)    |
+| POST   | `/incidentes/buscar`        | Buscar incidente por ID      |
+| POST   | `/incidentes/listar`        | Listar incidentes (paginado) |
+
+### **Usuarios**
+
+| Método | Endpoint      | Descripción                              |
+| ------ | ------------- | ---------------------------------------- |
+| GET    | `/usuario/me` | Obtener información del usuario logueado |
+
+---
+
+## 🛠️ Instalación y Ejecución
+
+### 1️⃣ Clonar el repositorio
+
+```bash
+git clone https://github.com/jcarlos-t/HCKT-CLOUD-FRONTEND.git
+cd HCKT-CLOUD-FRONTEND
 ```
+
+### 2️⃣ Instalar dependencias
+
+```bash
+npm install
+```
+
+### 3️⃣ Configurar variables de entorno
+
+Crear `.env`:
+
+```
+VITE_API_URL=https://<api-gateway-url>/dev
+```
+
+### 4️⃣ Ejecutar en desarrollo
+
+```bash
+npm run dev
+```
+
+### 5️⃣ Construir para producción
+
+```bash
+npm run build
+```
+
+---
+
+## 🔐 Autenticación
+
+La aplicación usa **JWT tokens entregados por el backend**.
+El token se guarda en:
+
+* `localStorage`
+* Se inyecta automáticamente en los headers de Axios (`Authorization: Bearer <token>`)
+
+---
+
+## 🧪 Flujo General del Sistema
+
+1. **Estudiante reporta incidente**
+2. Incidente queda en estado `reportado`
+3. Personal administrativo lo marca como `en_progreso`
+   → se requiere `empleado_correo`
+4. Personal completa el incidente y pasa a `resuelto`
+5. Estudiantes y autoridades pueden consultar el historial
+
+---
+
+## 📊 Tipos Principales del Sistema
+
+### Estado de Incidentes
+
+* `reportado`
+* `en_progreso`
+* `resuelto`
+
+### Tipo de Incidente
+
+* `mantenimiento`
+* `seguridad`
+* `limpieza`
+* `TI`
+* `otro`
+
+### Urgencia
+
+* `bajo`
+* `medio`
+* `alto`
+* `critico`
+
+---
+
+## 👥 Autores
+
+Proyecto desarrollado para **UTEC** como parte del hackathon académico.
