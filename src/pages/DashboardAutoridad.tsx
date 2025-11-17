@@ -12,8 +12,9 @@ import TriggerETLButton from "../components/analitica/TriggerETLButton";
 import MetricasPrincipalesCards from "../components/analitica/MetricasPrincipalesCards";
 import GestionUsuarios from "../components/gestion/GestionUsuarios";
 import GestionEmpleados from "../components/gestion/GestionEmpleados";
+import LogsViewer from "../components/logs/LogsViewer";
 
-type TabType = "analitica" | "usuarios" | "empleados";
+type TabType = "analitica" | "usuarios" | "empleados" | "logs";
 
 const DashboardAutoridad: React.FC = () => {
   const navigate = useNavigate();
@@ -139,6 +140,16 @@ const DashboardAutoridad: React.FC = () => {
             >
               👷 Gestión de Empleados
             </button>
+            <button
+              onClick={() => setActiveTab("logs")}
+              className={`py-4 px-2 border-b-2 font-medium text-sm transition ${
+                activeTab === "logs"
+                  ? "border-sky-600 text-sky-600"
+                  : "border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300"
+              }`}
+            >
+              📋 Trazas del Sistema
+            </button>
           </nav>
         </div>
       </div>
@@ -189,6 +200,8 @@ const DashboardAutoridad: React.FC = () => {
         {activeTab === "usuarios" && <GestionUsuarios />}
 
         {activeTab === "empleados" && <GestionEmpleados />}
+
+        {activeTab === "logs" && <LogsViewer />}
       </main>
     </div>
   );
