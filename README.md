@@ -44,7 +44,7 @@ El proyecto está dividido en un **frontend en React + Vite** y un **backend en 
 * Lambda Functions (Node)
 * DynamoDB
 * Amazon S3 (evidencias)
-* AWS Cognito (autenticación JWT)
+* Autenticación JWT
 
 ---
 
